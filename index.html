@@ -34,7 +34,7 @@
 	<h1>
 		D3-EXP
 	</h1>
-	<body> 
+	<body id="canvas"> 
 		<script>
 			
 			var monthes = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -85,7 +85,7 @@
 				 .interpolate("cardinal");	//smooth the line
 
 			// Adds the svg canvas
-			var svg = d3.select("body")
+			var svg = d3.select("#canvas")
 				.append("svg")
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom)

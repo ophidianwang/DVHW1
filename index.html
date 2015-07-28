@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+	<style> /* set the CSS */
+
+	body { font: 12px Arial;}
+
+	path { 
+	    stroke: steelblue;
+	    stroke-width: 2;
+	    fill: none;
+	}
+
+	.axis path,
+	.axis line {
+	    fill: none;
+	    stroke: grey;
+	    stroke-width: 1;
+	    shape-rendering: crispEdges;
+	}
+
+	.legend {
+	    font-size: 16px;
+	    font-weight: bold;
+	    text-anchor: middle;
+	}
+
+	</style>
+	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
+		<script src="d3.min.js" charset="utf-8"></script>
+		<script src="ExcelFormattedGISTEMPData.js" charset="utf-8"></script>
+	</head> 
+	<h1>
+		D3-EXP
+	</h1>
+	<body> 
+		<script>
+			
+			var monthes = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+			var validData = [];
+			for(i=0; i<data1.length; i++){
+
+				if(data1[i]["J-D"] == "NA")
+					continue;
+
+				validData.push( data1[i] );
+
+			}
+
+			console.log(data1);
+			console.log(validData);
+
+			var dataNest = d3.nest()
+						.key(function(d){
+							return Math.floor(d.Year/10);
+						})
+						.entries(validData);
+			console.log(dataNest);
+
+			// Set the dimensions of the canvas / graph
+			var margin = {top: 50, right: 200, bottom: 50, left: 200},
+				width = 1280 - margin.left - margin.right,
+				height = 720 - margin.top - margin.bottom;
+
+			// Set the ranges
+			var x = d3.scale.linear().range([0, width]);
+			var y = d3.scale.linear().range([height, 0]);
+			// Scale the range of the data
+			x.domain([0,9]);
+			y.domain([-80, 80]); 
+
+			// Define the axes
+			var xAxis = d3.svg.axis().scale(x)
+				.orient("bottom").ticks(9);
+
+			var yAxis = d3.svg.axis().scale(y)
+				.orient("left").ticks(8);
+
+			// Define the line
+			var devLine = d3.svg.line()
+				.x(function(d) { return x( d.Year%10 ); })	//scale year to x range value
+				.y(function(d) { return y( d['J-D'] ); })	//scale dev to y range value
+				 .interpolate("cardinal");	//smooth the line
+
+			// Adds the svg canvas
+			var svg = d3.select("body")
+				.append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			// Add the Title
+			svg.append("text")
+				.attr("x", width + 100) // spacing
+				.attr("y", +50) //spacing
+				.attr("class", "legend")    // style the legend
+				.style("fill", function() { // dynamic colours
+					return "#000000"; })
+				.text("Display Switch");
+
+			// set the colour scale
+			var color = d3.scale.category20();
+			var order = 0;
+
+			dataNest.forEach(function(d,i) { 
+
+				//console.log( key );
+				//build group for each decade
+				var group = svg.append("g").attr("id","decade"+d.key+"0");
+
+				//about cricle
+				var circleData = [];
+				for(j=0; j<d.values.length; j++){
+
+					var cx = d.values[j]['Year']%10;
+					var cy = d.values[j]['J-D'];
+
+					circleData.push( {'cx':x(cx), 'cy':y(cy)} );	//scale cx/cy to canvas domain
+				}
+				//console.log(circleData);
+
+				//about line
+				group.append("path")
+					.attr("class", "line")
+					.style("stroke", function() { // Add the colours dynamically
+						return color(order); })
+					.attr("d", devLine(d.values));
+
+				var circles = group.selectAll("circle")
+						.data(circleData)
+						.enter()
+						.append("circle");
+				circles.attr("cx", function (d) { return d.cx; })
+					.attr("cy", function (d) { return d.cy; })
+					.attr("r", function (d) { return 5; })
+					.style("fill", function (d) { return color(order); });
+
+				//about title
+				var title = d.key + "0 ~ " + d.key +"9";
+				// Add the Legend
+				group.append("text")
+					.attr("x", width + 100) // spacing
+					.attr("y", (height/20)*order+100) //spacing
+					.attr("class", "legend")    // style the legend
+					.style("fill", function() { // dynamic colours
+						return color(order); })
+					.on("click", function(){
+						console.log(d.key);
+
+						// Determine if current line is visible 
+						var active   = d.active ? false : true,
+						newOpacity = active ? 0 : 1; 
+						// Hide or show the elements based on the ID
+						d3.select("#decade"+d.key+"0 path")
+							.transition().duration(100) 
+							.style("opacity", newOpacity);
+
+						console.log( svg.selectAll("#decade"+d.key+"0 circle") );
+						d3.selectAll("#decade"+d.key+"0 circle")
+							.transition().duration(100) 
+							.style("opacity", newOpacity); 
+						// Update whether or not the elements are active
+						d.active = active;
+
+					})  
+					.text(title);
+
+				order++;
+			});
+
+			// Add the X Axis
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+				.call(xAxis)
+				.append("text")
+				.attr("x",+(width/2)).attr("y", +50)
+				.attr("class", "legend")    // style the legend
+				.text("From the start (year 0) to the end (year 9) of each Decade");
+
+			// Add the Y Axis
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis)
+				.append("text")
+				.attr("x", -100).attr("y", +(height/2) )
+				.attr("class", "legend")    // style the legend
+				.text("Deviation");
+
+		</script>
+ 	</body>
+</html>

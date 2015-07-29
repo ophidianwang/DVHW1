@@ -45,13 +45,14 @@
 		<div id="canvas"></div>
 		<div id="about">
 			<p>About chart:</p>
-			<p>1. Represent year to annual  deviation ( Jan-Dec ) group by decades.</p>
+			<p>1. Use ExcelFormattedGISTEMPData.js as data source.</p>
 			<p>2. Use different color on each line which corresponds to a decade.</p>
-			<p>3. Group 4 neighbor decades, and use similar but distinguishable color on them.</p>
-			<p>4. Click on each decades label may hide/display that decades line.</p>
-			<p>5. Hover on the circles to see the exact ( year, deviation) info.</p>
-			<p>6. From color groups: Blue (1880~1919), Orange (1920~1959), Green (1960~1999), Purple (2000~2014) , there's a increasing trend.</p>
-			<p>7. The increment between decades is also increasing.</p>
+			<p>3. Each circle represents a year to annual mean ( Jan-Dec ) pair.</p>
+			<p>4. Group 4 neighbor decades, and use similar but distinguishable color on them.</p>
+			<p>5. Click on each decades label may hide/display that decades line.</p>
+			<p>6. Hover on the circles to see the exact ( year, annual_mean) info.</p>
+			<p>7. From color groups: Blue (1880~1919), Orange (1920~1959), Green (1960~1999), Purple (2000~2014) , there's a increasing trend by time.</p>
+			<p>8. The increment between decades is also increasing.</p>
 		</div>
 		<script>
 			//console.log( $('#canvas') );
@@ -214,7 +215,7 @@
 				.append("text")
 				.attr("x", -100).attr("y", +(height/2) )
 				.attr("class", "legend")    // style the legend
-				.text("Deviation");
+				.text("Annual Means");
 
 			//tooltip on hover
 			$(function() {

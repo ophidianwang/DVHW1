@@ -104,16 +104,16 @@
 				.y(function(d) { return y( d['J-D'] ); })	//scale dev to y range value
 				 .interpolate("cardinal");		//smooth the line
 
-			// Adds the svg canvas
+			// Add the svg & transform group
 			var svg = d3.select("#canvas")
-				.append("svg")
+				.append("svg")	//append svg element
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom)
-				.append("g")
+				.append("g")	//append group in svg
 				.attr("id","transform")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			console.log($(svg));
+			console.log($(svg));	//Tt's actually a svg group object, not svg element
 
 			// Add the Title
 			svg.append("text")

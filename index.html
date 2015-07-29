@@ -24,18 +24,37 @@
 	    text-anchor: middle;
 	}
 
+	p {
+	    font-size: 16px;
+	}
+
 	</style>
 	<head>
 		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 		<meta content="utf-8" http-equiv="encoding">
+		<link rel="stylesheet" href="jquery-ui.min.css" />
 		<script src="d3.min.js" charset="utf-8"></script>
+		<script src="jquery-2.1.4.min.js" charset="utf-8"></script>
+		<script src="jquery-ui.min.js" charset="utf-8"></script>
 		<script src="ExcelFormattedGISTEMPData.js" charset="utf-8"></script>
 	</head> 
 	<h1>
-		D3-EXP
+		Data Visualization Assignment 1
 	</h1>
-	<body id="canvas"> 
+	<body> 
+		<div id="canvas"></div>
+		<div id="about">
+			<p>About chart:</p>
+			<p>1. Represent year to annual  deviation ( Jan-Dec ) group by decades.</p>
+			<p>2. Use different color on each line which corresponds to a decade.</p>
+			<p>3. Group 4 neighbor decades, and use similar but distinguishable color on them.</p>
+			<p>4. Click on each decades label may hide/display that decades line.</p>
+			<p>5. Hover on the circles to see the exact ( year, deviation) info.</p>
+			<p>6. From color groups: Blue (1880~1919), Orange (1920~1959), Green (1960~1999), Purple (2000~2014) , there's a increasing trend.</p>
+			<p>7. The increment between decades is also increasing.</p>
+		</div>
 		<script>
+			//console.log( $('#canvas') );
 			
 			var monthes = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -49,15 +68,15 @@
 
 			}
 
-			console.log(data1);
-			console.log(validData);
+			//console.log(data1);
+			//console.log(validData);
 
 			var dataNest = d3.nest()
 						.key(function(d){
 							return Math.floor(d.Year/10);
 						})
 						.entries(validData);
-			console.log(dataNest);
+			//console.log(dataNest);
 
 			// Set the dimensions of the canvas / graph
 			var margin = {top: 100, right: 200, bottom: 100, left: 200},
@@ -67,6 +86,7 @@
 			// Set the ranges
 			var x = d3.scale.linear().range([0, width]);
 			var y = d3.scale.linear().range([height, 0]);
+
 			// Scale the range of the data
 			x.domain([0,9]);
 			y.domain([-80, 80]); 
@@ -82,7 +102,7 @@
 			var devLine = d3.svg.line()
 				.x(function(d) { return x( d.Year%10 ); })	//scale year to x range value
 				.y(function(d) { return y( d['J-D'] ); })	//scale dev to y range value
-				 .interpolate("cardinal");	//smooth the line
+				 .interpolate("cardinal");		//smooth the line
 
 			// Adds the svg canvas
 			var svg = d3.select("#canvas")
@@ -90,7 +110,10 @@
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom)
 				.append("g")
+				.attr("id","transform")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			console.log($(svg));
 
 			// Add the Title
 			svg.append("text")
@@ -117,8 +140,10 @@
 
 					var cx = d.values[j]['Year']%10;
 					var cy = d.values[j]['J-D'];
+					var vx = d.values[j]['Year'];
+					var vy = d.values[j]['J-D'];
 
-					circleData.push( {'cx':x(cx), 'cy':y(cy)} );	//scale cx/cy to canvas domain
+					circleData.push( {'cx':x(cx), 'cy':y(cy), 'vx':vx, 'vy':vy} );	//scale cx/cy to canvas domain
 				}
 				//console.log(circleData);
 
@@ -136,6 +161,7 @@
 				circles.attr("cx", function (d) { return d.cx; })
 					.attr("cy", function (d) { return d.cy; })
 					.attr("r", function (d) { return 5; })
+					.attr("title", function (d) { return "( " + d.vx + " , " + d.vy + " )"; })
 					.style("fill", function (d) { return color(order); });
 
 				//about title
@@ -148,7 +174,7 @@
 					.style("fill", function() { // dynamic colours
 						return color(order); })
 					.on("click", function(){
-						console.log(d.key);
+						//console.log(d.key);
 
 						// Determine if current line is visible 
 						var active   = d.active ? false : true,
@@ -158,7 +184,7 @@
 							.transition().duration(100) 
 							.style("opacity", newOpacity);
 
-						console.log( svg.selectAll("#decade"+d.key+"0 circle") );
+						//console.log( svg.selectAll("#decade"+d.key+"0 circle") );
 						d3.selectAll("#decade"+d.key+"0 circle")
 							.transition().duration(100) 
 							.style("opacity", newOpacity); 
@@ -189,6 +215,11 @@
 				.attr("x", -100).attr("y", +(height/2) )
 				.attr("class", "legend")    // style the legend
 				.text("Deviation");
+
+			//tooltip on hover
+			$(function() {
+				$( document ).tooltip();
+			});
 
 		</script>
  	</body>
